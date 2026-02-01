@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyAI - Prompt Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #f8fafc;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .option-btn {
+            padding: 12px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            color: #94a3b8;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .option-btn.active {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        button[type="button"].generate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button[type="button"].generate:hover {
+            opacity: 0.9;
+        }
+
+        .output {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .output.show {
+            display: block;
+        }
+
+        .output-header {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 16px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            padding: 8px 16px;
+            background: #3b82f6;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .copy-btn:hover {
+            background: #2563eb;
+        }
+
+        .prompt-box {
+            padding: 20px;
+            background: #0f172a;
+        }
+
+        .prompt-text {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: #e2e8f0;
+            white-space: pre-wrap;
+        }
+
+        .tips {
+            padding: 16px 20px;
+            border-top: 1px solid #334155;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .tips strong {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>StudyAI</h1>
+            <p style="color: #94a3b8;">Generate prompts for ChatGPT, DeepSeek, Claude</p>
+        </header>
+
+        <div class="card">
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="subject" placeholder="e.g., History" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Topic</label>
+                <input type="text" id="topic" placeholder="e.g., Ashoka" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Class</label>
+                <select id="level">
+                    <option value="">Select</option>
+                    <option value="Class 6">Class 6</option>
+                    <option value="Class 7">Class 7</option>
+                    <option value="Class 8">Class 8</option>
+                    <option value="Class 9">Class 9</option>
+                    <option value="Class 10">Class 10</option>
+                    <option value="Class 11">Class 11</option>
+                    <option value="Class 12">Class 12</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>What do you need?</label>
+                <div class="options">
+                    <div class="option-btn active" onclick="selectType(this, 'notes')">Complete Notes</div>
+                    <div class="option-btn" onclick="selectType(this, 'questions')">Exam Questions</div>
+                    <div class="option-btn" onclick="selectType(this, 'revision')">Quick Revision</div>
+                    <div class="option-btn" onclick="selectType(this, 'numerical')">Numericals</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Extra requirements (optional)</label>
+                <textarea id="extra" placeholder="e.g., Explain in Hindi"></textarea>
+            </div>
+
+            <button type="button" class="generate" onclick="makePrompt()">Generate Prompt</button>
+        </div>
+
+        <div class="output" id="outputBox">
+            <div class="output-header">
+                <span style="font-weight: 600; color: #60a5fa;">Your Prompt</span>
+                <button class="copy-btn" onclick="copyText()">Copy</button>
+            </div>
+            <div class="prompt-box">
+                <div class="prompt-text" id="promptArea"></div>
+            </div>
+            <div class="tips">
+                <strong>Tip:</strong> Paste this in ChatGPT, DeepSeek, or Claude for best results
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentType = 'notes';
+
+        function selectType(btn, type) {
+            var buttons = document.querySelectorAll('.option-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+            btn.classList.add('active');
+            currentType = type;
+        }
+
+        function makePrompt() {
+            var subject = document.getElementById('subject').value;
+            var topic = document.getElementById('topic').value;
+            var level = document.getElementById('level').value;
+            var extra = document.getElementById('extra').value;
+
+            if (!subject || !topic || !level) {
+                alert('Please fill subject, topic and class');
+                return;
+            }
+
+            var prompt = buildPromptText(subject, topic, level, currentType, extra);
+            
+            document.getElementById('promptArea').textContent = prompt;
+            document.getElementById('outputBox').classList.add('show');
+        }
+
+        function buildPromptText(subject, topic, level, type, extra) {
+            var base = 'I am a ' + level + ' student studying ' + subject + '. ';
+            
+            var templates = {
+                notes: base + 'Create comprehensive study notes for "' + topic + '" including:\n\n' +
+                       '1. INTRODUCTION - Why this topic is important for exams\n' +
+                       '2. KEY CONCEPTS - 8-10 main points with definitions\n' +
+                       '3. DETAILED EXPLANATIONS - Step-by-step breakdown\n' +
+                       '4. EXAM FOCUS - 5 most important questions with answers\n' +
+                       '5. MEMORY TECHNIQUES - Mnemonics and shortcuts\n' +
+                       '6. QUICK REVIEW - One page summary\n\n' +
+                       'Format: Use headings, bullet points, and bold text.',
+
+                questions: base + 'Generate complete exam preparation for "' + topic + '":\n\n' +
+                          'SECTION A: 10 MCQs with explanations\n' +
+                          'SECTION B: 10 Short answers (3-5 marks)\n' +
+                          'SECTION C: 5 Long answers (5-8 marks)\n' +
+                          'SECTION D: 5 Previous year pattern questions\n' +
+                          'SECTION E: 3 HOTS analytical questions\n\n' +
+                          'Mark difficulty level for each.',
+
+                revision: base + 'Create LAST-MINUTE revision guide for "' + topic + '":\n\n' +
+                         '1. ONE PAGE SUMMARY - 10 bullet points max\n' +
+                         '2. MEMORY AIDES - 3 mnemonics, 2 acronyms\n' +
+                         '3. FORMULA SHEET - All formulas with units\n' +
+                         '4. 5-MINUTE REVIEW - Ultra-short summary\n' +
+                         '5. PREDICTED QUESTIONS - 3 likely exam questions\n' +
+                         '6. DON\'T FORGET LIST - Common mistakes\n\n' +
+                         'Format: Extremely concise, use symbols.',
+
+                numerical: base + 'I need numerical problems on "' + topic + '":\n\n' +
+                          'THEORY: All formulas with definitions\n\n' +
+                          'SET 1 - Basic (10 questions): Direct formula use\n' +
+                          'SET 2 - Intermediate (10 questions): Multi-step\n' +
+                          'SET 3 - Advanced (10 questions): Exam level\n\n' +
+                          'For each: Given data, What to find, Formula, Step solution, Final answer, Common mistake.'
+            };
+
+            var result = templates[type] || templates.notes;
+            
+            if (extra) {
+                result += '\n\nAdditional requirement: ' + extra;
+            }
+            
+            return result;
+        }
+
+        function copyText() {
+            var text = document.getElementById('promptArea').textContent;
+            
+            // Create temporary textarea
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            alert('Prompt copied! Paste in ChatGPT/DeepSeek now');
+        }
+    </script>
+</body>
+</html>
